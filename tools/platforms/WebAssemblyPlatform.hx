@@ -135,7 +135,7 @@ class WebAssemblyPlatform extends PlatformTarget
 
 		project.path(sdkPath);
 
-		System.runCommand("", "emcc", ["-c", targetDirectory + "/obj/Main.cpp", "-o", targetDirectory + "/obj/Main.o"], true, false, true);
+		System.runCommand("", Path.combine(sdkPath, "upstream/emscripten/emcc"), ["-c", targetDirectory + "/obj/Main.cpp", "-o", targetDirectory + "/obj/Main.o"], true, false, true);
 
 		args = ["Main.o"];
 
@@ -198,10 +198,9 @@ class WebAssemblyPlatform extends PlatformTarget
 		else
 		{
 			args.push("-gsource-map");
+			args.push("-fwasm-exceptions");
 			args.push("-s");
-			args.push("DISABLE_EXCEPTION_CATCHING=0");
-			args.push("-s");
-			args.push("NO_DISABLE_EXCEPTION_CATCHING=1");
+			args.push("SUPPORT_LONGJMP=wasm");
 			args.push("-s");
 			args.push("ASSERTIONS=1");
 			// args.push("-s");
@@ -286,7 +285,7 @@ class WebAssemblyPlatform extends PlatformTarget
 
 		// args.push ("../bin/index.html");
 
-		System.runCommand(targetDirectory + "/obj", "emcc", args, true, false, true);
+		System.runCommand(targetDirectory + "/obj", Path.combine(sdkPath, "upstream/emscripten/emcc"), args, true, false, true);
 
 		if (FileSystem.exists(outputFile))
 		{

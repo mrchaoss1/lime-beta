@@ -577,6 +577,18 @@ namespace lime {
 
 	}
 
+	double System::GetPerformanceCounter () {
+
+		return SDL_GetPerformanceCounter ();
+
+	}
+
+	double System::GetPerformanceFrequency () {
+
+		return SDL_GetPerformanceFrequency ();
+
+	}
+
 
 	bool System::SetAllowScreenTimeout (bool allow) {
 
@@ -592,6 +604,29 @@ namespace lime {
 
 		return allow;
 
+	}
+
+	int System::GetDisplayOrientation(int displayIndex) {
+		int orientation = 0;
+		switch(SDL_GetDisplayOrientation(displayIndex)) {
+			case SDL_ORIENTATION_UNKNOWN:
+				orientation = 0;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE:
+				orientation = 1;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+				orientation = 2;
+				break;
+			case SDL_ORIENTATION_PORTRAIT:
+				orientation = 3;
+				break;
+			case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+				orientation = 4;
+				break;
+		}
+
+		return orientation;
 	}
 
 

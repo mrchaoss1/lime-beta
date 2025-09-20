@@ -40,11 +40,12 @@ namespace lime {
 
 		currentApplication = this;
 
-		framePeriod = 1000.0 / 60.0;
+		framePeriod = 1.0 / 60.0;
 
 		currentUpdate = 0;
-		lastUpdate = 0;
 		nextUpdate = 0;
+		lastUpdate = SDL_GetPerformanceCounter ();
+		freq = SDL_GetPerformanceFrequency ();
 
 		ApplicationEvent applicationEvent;
 		ClipboardEvent clipboardEvent;
@@ -128,25 +129,25 @@ namespace lime {
 
 			case SDL_USEREVENT:
 
-				if (!inBackground) {
+				// if (!inBackground) {
 
-					currentUpdate = SDL_GetTicks ();
-					applicationEvent.type = UPDATE;
-					applicationEvent.deltaTime = currentUpdate - lastUpdate;
-					lastUpdate = currentUpdate;
+				// 	currentUpdate = SDL_GetTicks ();
+				// 	applicationEvent.type = UPDATE;
+				// 	applicationEvent.deltaTime = currentUpdate - lastUpdate;
+				// 	lastUpdate = currentUpdate;
 
-					nextUpdate += framePeriod;
+				// 	nextUpdate += framePeriod;
 
-					while (nextUpdate <= currentUpdate) {
+				// 	while (nextUpdate <= currentUpdate) {
 
-						nextUpdate += framePeriod;
+				// 		nextUpdate += framePeriod;
 
-					}
+				// 	}
 
-					ApplicationEvent::Dispatch (&applicationEvent);
-					RenderEvent::Dispatch (&renderEvent);
+				// 	ApplicationEvent::Dispatch (&applicationEvent);
+				// 	RenderEvent::Dispatch (&renderEvent);
 
-				}
+				// }
 
 				break;
 
@@ -852,11 +853,11 @@ namespace lime {
 
 		if (frameRate > 0) {
 
-			framePeriod = 1000.0 / frameRate;
+			framePeriod = 1.0 / frameRate;
 
 		} else {
 
-			framePeriod = 1000.0;
+			framePeriod = 1.0;
 
 		}
 
@@ -893,56 +894,37 @@ namespace lime {
 		SDL_Event event;
 		event.type = -1;
 
-		#if (!defined (IPHONE) && !defined (EMSCRIPTEN))
-
-		if (active && (firstTime || WaitEvent (&event))) {
-
-			firstTime = false;
-
+		while (SDL_PollEvent (&event)) {
 			HandleEvent (&event);
 			event.type = -1;
 			if (!active)
 				return active;
 
-		#endif
-
-			while (SDL_PollEvent (&event)) {
-
-				HandleEvent (&event);
-				event.type = -1;
-				if (!active)
-					return active;
-
-			}
-
-			currentUpdate = SDL_GetTicks ();
-
-		#if defined (IPHONE) || defined (EMSCRIPTEN)
-
-			if (currentUpdate >= nextUpdate) {
-
-				event.type = SDL_USEREVENT;
-				HandleEvent (&event);
-				event.type = -1;
-
-			}
-
-		#else
-
-			if (currentUpdate >= nextUpdate) {
-
-				if (timerActive) SDL_RemoveTimer (timerID);
-				OnTimer (0, 0);
-
-			} else if (!timerActive) {
-
-				timerActive = true;
-				timerID = SDL_AddTimer (nextUpdate - currentUpdate, OnTimer, 0);
-
-			}
-
 		}
 
+
+		#if (!defined (IPHONE) && !defined (EMSCRIPTEN))
+		if (!inBackground) {
+		#endif
+			currentUpdate = SDL_GetPerformanceCounter ();
+			
+	        double deltaTime = (double)(currentUpdate - lastUpdate) / freq;
+		    if (deltaTime < framePeriod) {
+				double waitTime = framePeriod - deltaTime;
+            	Uint64 waitTicks = (Uint64)(waitTime * freq);
+            	SDL_Delay((waitTicks * 1000) / freq);
+            	currentUpdate = SDL_GetPerformanceCounter();
+            	deltaTime += waitTime;
+        	}
+			lastUpdate = currentUpdate;
+
+			applicationEvent.type = UPDATE;
+			applicationEvent.deltaTime = deltaTime * 1000;
+
+			ApplicationEvent::Dispatch (&applicationEvent);
+			RenderEvent::Dispatch (&renderEvent);
+		#if (!defined (IPHONE) && !defined (EMSCRIPTEN))
+		}
 		#endif
 
 		return active;

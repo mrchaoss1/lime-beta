@@ -45,12 +45,15 @@ namespace lime {
 			static std::wstring* GetPlatformName ();
 			static std::wstring* GetPlatformVersion ();
 			static double GetTimer ();
+			static double GetPerformanceCounter ();
+			static double GetPerformanceFrequency ();
 			#if defined(HX_WINDOWS) && !defined (HX_WINRT)
 			static int GetWindowsConsoleMode (int handleType);
 			#endif
 			static void OpenFile (const char* path);
 			static void OpenURL (const char* url, const char* target);
 			static bool SetAllowScreenTimeout (bool allow);
+			static int GetDisplayOrientation (int displayIndex);
 			#if defined(HX_WINDOWS) && !defined (HX_WINRT)
 			static bool SetWindowsConsoleMode (int handleType, int mode);
 			#endif

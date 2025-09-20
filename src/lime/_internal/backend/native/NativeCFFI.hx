@@ -251,6 +251,8 @@ class NativeCFFI
 
 	@:cffi private static function lime_system_set_allow_screen_timeout(value:Bool):Bool;
 
+	@:cffi private static function lime_system_get_display_orientation(value:Bool):Bool;
+
 	@:cffi private static function lime_system_get_device_model():Dynamic;
 
 	@:cffi private static function lime_system_get_device_vendor():Dynamic;
@@ -272,6 +274,10 @@ class NativeCFFI
 	@:cffi private static function lime_system_get_platform_version():Dynamic;
 
 	@:cffi private static function lime_system_get_timer():Float;
+
+	@:cffi private static function lime_system_get_performance_counter():Float;
+
+	@:cffi private static function lime_system_get_performance_frequency():Float;
 
 	@:cffi private static function lime_system_open_file(path:String):Void;
 
@@ -540,6 +546,8 @@ class NativeCFFI
 		"lime_system_get_allow_screen_timeout", "b", false));
 	private static var lime_system_set_allow_screen_timeout = new cpp.Callable<Bool->Bool>(cpp.Prime._loadPrime("lime",
 		"lime_system_set_allow_screen_timeout", "bb", false));
+		private static var lime_system_get_display_orientation = new cpp.Callable<Int->Int>(cpp.Prime._loadPrime("lime",
+		"lime_system_get_display_orientation", "ii", false));
 	private static var lime_system_get_device_model = new cpp.Callable<Void->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_system_get_device_model", "o",
 		false));
 	private static var lime_system_get_device_vendor = new cpp.Callable<Void->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_system_get_device_vendor", "o",
@@ -557,6 +565,8 @@ class NativeCFFI
 	private static var lime_system_get_platform_version = new cpp.Callable<Void->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_system_get_platform_version",
 		"o", false));
 	private static var lime_system_get_timer = new cpp.Callable<Void->Float>(cpp.Prime._loadPrime("lime", "lime_system_get_timer", "d", false));
+	private static var lime_system_get_performance_counter = new cpp.Callable<Void->Float>(cpp.Prime._loadPrime("lime", "lime_system_get_performance_counter", "d", false));
+	private static var lime_system_get_performance_frequency = new cpp.Callable<Void->Float>(cpp.Prime._loadPrime("lime", "lime_system_get_performance_frequency", "d", false));
 	private static var lime_system_open_file = new cpp.Callable<String->cpp.Void>(cpp.Prime._loadPrime("lime", "lime_system_open_file", "sv", false));
 	private static var lime_system_open_url = new cpp.Callable<String->String->cpp.Void>(cpp.Prime._loadPrime("lime", "lime_system_open_url", "ssv", false));
 	private static var lime_text_event_manager_register = new cpp.Callable<cpp.Object->cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
@@ -740,6 +750,7 @@ class NativeCFFI
 	private static var lime_sensor_event_manager_register = CFFI.load("lime", "lime_sensor_event_manager_register", 2);
 	private static var lime_system_get_allow_screen_timeout = CFFI.load("lime", "lime_system_get_allow_screen_timeout", 0);
 	private static var lime_system_set_allow_screen_timeout = CFFI.load("lime", "lime_system_set_allow_screen_timeout", 1);
+	private static var lime_system_get_display_orientation = CFFI.load("lime", "lime_system_get_display_orientation", 1);
 	private static var lime_system_get_device_model = CFFI.load("lime", "lime_system_get_device_model", 0);
 	private static var lime_system_get_device_vendor = CFFI.load("lime", "lime_system_get_device_vendor", 0);
 	private static var lime_system_get_directory = CFFI.load("lime", "lime_system_get_directory", 3);
@@ -751,6 +762,8 @@ class NativeCFFI
 	private static var lime_system_get_platform_name = CFFI.load("lime", "lime_system_get_platform_name", 0);
 	private static var lime_system_get_platform_version = CFFI.load("lime", "lime_system_get_platform_version", 0);
 	private static var lime_system_get_timer = CFFI.load("lime", "lime_system_get_timer", 0);
+	private static var lime_system_get_performance_counter = CFFI.load("lime", "lime_system_get_performance_counter", 0);
+	private static var lime_system_get_performance_frequency = CFFI.load("lime", "lime_system_get_performance_frequency", 0);
 	private static var lime_system_open_file = CFFI.load("lime", "lime_system_open_file", 1);
 	private static var lime_system_open_url = CFFI.load("lime", "lime_system_open_url", 2);
 	private static var lime_text_event_manager_register = CFFI.load("lime", "lime_text_event_manager_register", 2);
@@ -1209,6 +1222,11 @@ class NativeCFFI
 		return false;
 	}
 
+	@:hlNative("lime", "hl_system_get_display_orientation") private static function lime_system_get_display_orientation(value:Int):Int
+	{
+		return 0;
+	}
+
 	@:hlNative("lime", "hl_system_get_device_model") private static function lime_system_get_device_model():hl.Bytes
 	{
 		return null;
@@ -1263,6 +1281,17 @@ class NativeCFFI
 	{
 		return 0;
 	}
+
+	@:hlNative("lime", "hl_system_get_performance_counter") private static function lime_system_get_performance_counter():Float
+	{
+		return 0;
+	}
+
+	@:hlNative("lime", "hl_system_get_performance_frequency") private static function lime_system_get_performance_frequency():Float
+	{
+		return 0;
+	}
+
 
 	@:hlNative("lime", "hl_system_open_file") private static function lime_system_open_file(path:String):Void {}
 

@@ -23,8 +23,9 @@
 	<!-- <set name="LIME_NEKO" value="1" if="linux" /> -->
 	<set name="LIME_OGG" value="1" />
 	<set name="LIME_OPENALSOFT" value="1" if="windows || linux || mac || android" unless="static_link" />
-	<set name="LIME_OPENAL" value="1" if="iphone || webassembly || tvos" />
-	<set name="LIME_MOJOAL" value="1" if="switch || static_link || winrt || mojoal" unless="LIME_OPENAL" />
+	<set name="LIME_OPENALSOFT" value="1" if="iphone" />
+	<set name="LIME_OPENAL" value="1" if="webassembly || tvos" />
+	<set name="LIME_MOJOAL" value="1" if="switch || static_link || winrt || mojoal" unless="LIME_OPENAL || iphone" />
 	<unset name="LIME_OPENALSOFT" if="LIME_MOJOAL" />
 	<set name="LIME_OPENAL" value="1" if="LIME_OPENALSOFT" />
 	<set name="LIME_OPENAL" value="1" if="LIME_MOJOAL" />
@@ -329,7 +330,7 @@
 	<include name="lib/curl-files.xml" />
 	<include name="lib/efsw/files.xml" />
 	<include name="lib/faudio/files.xml" if="LIME_FAUDIO" />
-	<include name="lib/freetype/files.xml" />
+	<include name="lib/freetype-files.xml" />
 	<include name="lib/harfbuzz/files.xml" />
 	<include name="lib/jpeg/files.xml" />
 	<include name="lib/lzma/files.xml" />
@@ -338,7 +339,7 @@
 	<include name="lib/neko/files.xml" />
 	<include name="lib/ogg/files.xml" />
 	<include name="lib/openal-files.xml" />
-	<include name="lib/pixman/files.xml" />
+	<include name="lib/pixman-files.xml" />
 	<include name="lib/png/files.xml" />
 	<include name="lib/sdl/files.xml" />
 	<include name="lib/tinyfiledialogs/files.xml" />
