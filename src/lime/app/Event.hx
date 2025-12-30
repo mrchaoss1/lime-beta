@@ -1,5 +1,7 @@
 package lime.app;
 
+import haxe.ds.ObjectMap;
+
 /**
 	Event is a strictly-typed signals and slots implementation, used for
 	core event dispatching.
@@ -34,6 +36,7 @@ class Event<T>
 	@:noCompletion @:dox(hide) public var __repeat:Array<Bool>;
 
 	@:noCompletion private var __priorities:Array<Int>;
+	@:noCompletion private var __listenerMap:ObjectMap<T, Bool>;
 
 	/**
 		Creates a new Event instance
@@ -45,6 +48,7 @@ class Event<T>
 		__listeners = new Array();
 		__priorities = new Array<Int>();
 		__repeat = new Array<Bool>();
+		__listenerMap = new ObjectMap<T, Bool>();
 		#end
 	}
 
@@ -57,6 +61,9 @@ class Event<T>
 	public function add(listener:T, once:Bool = false, priority:Int = 0):Void
 	{
 		#if !macro
+		// Fast check using ObjectMap - avoids duplicate listeners
+		if (__listenerMap.exists(listener)) return;
+
 		for (i in 0...__priorities.length)
 		{
 			if (priority > __priorities[i])
@@ -64,6 +71,7 @@ class Event<T>
 				__listeners.insert(i, cast listener);
 				__priorities.insert(i, priority);
 				__repeat.insert(i, !once);
+				__listenerMap.set(listener, true);
 				return;
 			}
 		}
@@ -71,6 +79,7 @@ class Event<T>
 		__listeners.push(cast listener);
 		__priorities.push(priority);
 		__repeat.push(!once);
+		__listenerMap.set(listener, true);
 		#end
 	}
 
@@ -126,13 +135,11 @@ class Event<T>
 	public function has(listener:T):Bool
 	{
 		#if !macro
-		for (l in __listeners)
-		{
-			if (Reflect.compareMethods(l, listener)) return true;
-		}
-		#end
-
+		// O(1) lookup using ObjectMap instead of O(n) Reflect.compareMethods
+		return __listenerMap.exists(listener);
+		#else
 		return false;
+		#end
 	}
 
 	/**
@@ -142,17 +149,23 @@ class Event<T>
 	public function remove(listener:T):Void
 	{
 		#if !macro
+		// Fast early exit if listener not in map
+		if (!__listenerMap.exists(listener)) return;
+
 		var i = __listeners.length;
 
 		while (--i >= 0)
 		{
-			if (Reflect.compareMethods(__listeners[i], listener))
+			// Use reference equality instead of slow Reflect.compareMethods
+			if (__listeners[i] == listener)
 			{
 				__listeners.splice(i, 1);
 				__priorities.splice(i, 1);
 				__repeat.splice(i, 1);
 			}
 		}
+
+		__listenerMap.remove(listener);
 		#end
 	}
 
@@ -167,6 +180,7 @@ class Event<T>
 		__listeners.splice(0, len);
 		__priorities.splice(0, len);
 		__repeat.splice(0, len);
+		__listenerMap = new ObjectMap<T, Bool>();
 		#end
 	}
 }
