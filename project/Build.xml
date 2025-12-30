@@ -6,6 +6,10 @@
 
 	<include name="${HXCPP}/build-tool/BuildCommon.xml" />
 
+	<!-- Performance optimization flags -->
+	<set name="HXCPP_OPTIMIZATION" value="-O3" unless="debug" />
+	<set name="HXCPP_OPTIMIZATION" value="-Os" if="mobile" unless="debug" />
+
 	<set name="ios" value="1" if="iphone" />
 	<set name="tvos" value="1" if="appletv" />
 
@@ -59,6 +63,19 @@
 	<files id="lime">
 
 		<compilerflag value="-Iinclude" />
+
+		<!-- Optimization and size reduction flags for release builds -->
+		<compilerflag value="-O3" unless="debug || mobile" />
+		<compilerflag value="-Os" if="mobile" unless="debug" />
+		<compilerflag value="-flto" unless="debug || emscripten || winrt || android" />
+		<compilerflag value="-ffunction-sections" unless="debug" />
+		<compilerflag value="-fdata-sections" unless="debug" />
+
+		<!-- Linker flags for dead code elimination and symbol stripping -->
+		<flag value="-Wl,--gc-sections" unless="debug" if="linux || android" />
+		<flag value="-Wl,-dead_strip" unless="debug" if="mac || ios || tvos" />
+		<flag value="-s" unless="debug || mac || ios || tvos" />
+		<flag value="-Wl,-x" unless="debug" if="mac || ios || tvos" />
 
 		<file name="src/ExternalInterface.cpp" />
 		<file name="src/mingw.cpp" if="mingw" />
