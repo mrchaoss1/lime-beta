@@ -242,6 +242,16 @@ class NativeWindow
 		}
 	}
 
+	public function requestAttention(briefly:Bool):Void
+	{
+		if (handle != null)
+		{
+			#if (!macro && lime_cffi)
+			NativeCFFI.lime_window_request_attention(handle, briefly);
+			#end
+		}
+	}
+
 	public function getCursor():MouseCursor
 	{
 		return cursor;

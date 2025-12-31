@@ -407,6 +407,15 @@ class Window
 		__backend.focus();
 	}
 
+	/**
+		Requests user attention by flashing the window in the taskbar.
+		@param briefly If true, flashes briefly. If false, flashes until focused.
+	**/
+	public function requestAttention(briefly:Bool = true):Void
+	{
+		__backend.requestAttention(briefly);
+	}
+
 	public function move(x:Int, y:Int):Void
 	{
 		__backend.move(x, y);

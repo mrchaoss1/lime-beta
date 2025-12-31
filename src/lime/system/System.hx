@@ -3,8 +3,11 @@ package lime.system;
 import haxe.Constraints;
 import lime._internal.backend.native.NativeCFFI;
 import lime.app.Application;
+import lime.app.Event;
 import lime.graphics.RenderContextAttributes;
 import lime.math.Rectangle;
+import lime.system.PowerState;
+import lime.system.SystemTheme;
 import lime.ui.WindowAttributes;
 import lime.utils.ArrayBuffer;
 import lime.utils.UInt8Array;
@@ -51,6 +54,26 @@ class System
 		Determines if the screen saver is allowed to start or not.
 	**/
 	public static var allowScreenTimeout(get, set):Bool;
+
+	/**
+		The current battery level (0-100) or -1 if unknown/no battery
+	**/
+	public static var batteryLevel(get, never):Int;
+
+	/**
+		Event dispatched when power state changes (plugged in, unplugged, etc.)
+	**/
+	public static var onPowerStateChange(default, null) = new Event<PowerState->Void>();
+
+	/**
+		The current power state of the device
+	**/
+	public static var powerState(get, never):PowerState;
+
+	/**
+		The current system theme/appearance preference (light, dark, or unknown)
+	**/
+	public static var systemTheme(get, never):SystemTheme;
 
 	/**
 		The path to the directory where the application is installed, along with
@@ -725,6 +748,47 @@ class System
 		return NativeCFFI.lime_system_set_allow_screen_timeout(value);
 		#else
 		return true;
+		#end
+	}
+
+	private static function get_batteryLevel():Int
+	{
+		#if (lime_cffi && !macro)
+		return NativeCFFI.lime_system_get_battery_level();
+		#else
+		return -1;
+		#end
+	}
+
+	private static function get_powerState():PowerState
+	{
+		#if (lime_cffi && !macro)
+		var state = NativeCFFI.lime_system_get_power_state();
+		return switch (state)
+		{
+			case 1: PowerState.ON_BATTERY;
+			case 2: PowerState.NO_BATTERY;
+			case 3: PowerState.CHARGING;
+			case 4: PowerState.CHARGED;
+			default: PowerState.UNKNOWN;
+		};
+		#else
+		return PowerState.UNKNOWN;
+		#end
+	}
+
+	private static function get_systemTheme():SystemTheme
+	{
+		#if (lime_cffi && !macro)
+		var theme = NativeCFFI.lime_system_get_theme();
+		return switch (theme)
+		{
+			case 1: SystemTheme.DARK;
+			case 2: SystemTheme.LIGHT;
+			default: SystemTheme.UNKNOWN;
+		};
+		#else
+		return SystemTheme.UNKNOWN;
 		#end
 	}
 

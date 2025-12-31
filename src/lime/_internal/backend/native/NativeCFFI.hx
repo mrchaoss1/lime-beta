@@ -237,6 +237,8 @@ class NativeCFFI
 
 	@:cffi private static function lime_neko_execute(module:String):Void;
 
+	@:cffi private static function lime_notification_show(title:String, body:String, icon:String):Bool;
+
 	@:cffi private static function lime_orientation_event_manager_register(callback:Dynamic, eventObject:Dynamic):Void;
 
 	@:cffi private static function lime_png_decode_bytes(data:Dynamic, decodeData:Bool, buffer:Dynamic):Dynamic;
@@ -250,6 +252,12 @@ class NativeCFFI
 	@:cffi private static function lime_system_get_allow_screen_timeout():Bool;
 
 	@:cffi private static function lime_system_set_allow_screen_timeout(value:Bool):Bool;
+
+	@:cffi private static function lime_system_get_battery_level():Int;
+
+	@:cffi private static function lime_system_get_power_state():Int;
+
+	@:cffi private static function lime_system_get_theme():Int;
 
 	@:cffi private static function lime_system_get_display_orientation(value:Bool):Bool;
 
@@ -302,6 +310,8 @@ class NativeCFFI
 	@:cffi private static function lime_window_create(application:Dynamic, width:Int, height:Int, flags:Int, title:String):Dynamic;
 
 	@:cffi private static function lime_window_focus(handle:Dynamic):Void;
+
+	@:cffi private static function lime_window_request_attention(handle:Dynamic, briefly:Bool):Void;
 
 	@:cffi private static function lime_window_get_context(handle:Dynamic):Float;
 
@@ -534,6 +544,8 @@ class NativeCFFI
 	private static var lime_mouse_event_manager_register = new cpp.Callable<cpp.Object->cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
 		"lime_mouse_event_manager_register", "oov", false));
 	private static var lime_neko_execute = new cpp.Callable<String->cpp.Void>(cpp.Prime._loadPrime("lime", "lime_neko_execute", "sv", false));
+	private static var lime_notification_show = new cpp.Callable<String->String->String->Bool>(cpp.Prime._loadPrime("lime",
+		"lime_notification_show", "sssb", false));
 	private static var lime_orientation_event_manager_register = new cpp.Callable<cpp.Object->cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
 		"lime_orientation_event_manager_register", "oov", false));
 	private static var lime_png_decode_bytes = new cpp.Callable<cpp.Object->Bool->cpp.Object->cpp.Object>(cpp.Prime._loadPrime("lime",
@@ -548,6 +560,12 @@ class NativeCFFI
 		"lime_system_get_allow_screen_timeout", "b", false));
 	private static var lime_system_set_allow_screen_timeout = new cpp.Callable<Bool->Bool>(cpp.Prime._loadPrime("lime",
 		"lime_system_set_allow_screen_timeout", "bb", false));
+	private static var lime_system_get_battery_level = new cpp.Callable<Void->Int>(cpp.Prime._loadPrime("lime",
+		"lime_system_get_battery_level", "i", false));
+	private static var lime_system_get_power_state = new cpp.Callable<Void->Int>(cpp.Prime._loadPrime("lime",
+		"lime_system_get_power_state", "i", false));
+	private static var lime_system_get_theme = new cpp.Callable<Void->Int>(cpp.Prime._loadPrime("lime",
+		"lime_system_get_theme", "i", false));
 		private static var lime_system_get_display_orientation = new cpp.Callable<Int->Int>(cpp.Prime._loadPrime("lime",
 		"lime_system_get_display_orientation", "ii", false));
 	private static var lime_system_get_device_model = new cpp.Callable<Void->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_system_get_device_model", "o",
@@ -589,6 +607,8 @@ class NativeCFFI
 	private static var lime_window_create = new cpp.Callable<cpp.Object->Int->Int->Int->String->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_window_create",
 		"oiiiso", false));
 	private static var lime_window_focus = new cpp.Callable<cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime", "lime_window_focus", "ov", false));
+	private static var lime_window_request_attention = new cpp.Callable<cpp.Object->Bool->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_window_request_attention", "obv", false));
 	private static var lime_window_get_context = new cpp.Callable<cpp.Object->Float>(cpp.Prime._loadPrime("lime", "lime_window_get_context", "od", false));
 	private static var lime_window_get_context_type = new cpp.Callable<cpp.Object->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_window_get_context_type",
 		"oo", false));
@@ -747,6 +767,7 @@ class NativeCFFI
 	private static var lime_lzma_decompress = CFFI.load("lime", "lime_lzma_decompress", 2);
 	private static var lime_mouse_event_manager_register = CFFI.load("lime", "lime_mouse_event_manager_register", 2);
 	private static var lime_neko_execute = CFFI.load("lime", "lime_neko_execute", 1);
+	private static var lime_notification_show = CFFI.load("lime", "lime_notification_show", 3);
 	private static var lime_orientation_event_manager_register = CFFI.load("lime", "lime_orientation_event_manager_register", 2);
 	private static var lime_png_decode_bytes = CFFI.load("lime", "lime_png_decode_bytes", 3);
 	private static var lime_png_decode_file = CFFI.load("lime", "lime_png_decode_file", 3);
@@ -754,6 +775,9 @@ class NativeCFFI
 	private static var lime_sensor_event_manager_register = CFFI.load("lime", "lime_sensor_event_manager_register", 2);
 	private static var lime_system_get_allow_screen_timeout = CFFI.load("lime", "lime_system_get_allow_screen_timeout", 0);
 	private static var lime_system_set_allow_screen_timeout = CFFI.load("lime", "lime_system_set_allow_screen_timeout", 1);
+	private static var lime_system_get_battery_level = CFFI.load("lime", "lime_system_get_battery_level", 0);
+	private static var lime_system_get_power_state = CFFI.load("lime", "lime_system_get_power_state", 0);
+	private static var lime_system_get_theme = CFFI.load("lime", "lime_system_get_theme", 0);
 	private static var lime_system_get_display_orientation = CFFI.load("lime", "lime_system_get_display_orientation", 1);
 	private static var lime_system_get_device_model = CFFI.load("lime", "lime_system_get_device_model", 0);
 	private static var lime_system_get_device_vendor = CFFI.load("lime", "lime_system_get_device_vendor", 0);
@@ -780,6 +804,7 @@ class NativeCFFI
 	private static var lime_window_context_unlock = CFFI.load("lime", "lime_window_context_unlock", 1);
 	private static var lime_window_create = CFFI.load("lime", "lime_window_create", 5);
 	private static var lime_window_focus = CFFI.load("lime", "lime_window_focus", 1);
+	private static var lime_window_request_attention = CFFI.load("lime", "lime_window_request_attention", 2);
 	private static var lime_window_get_context = CFFI.load("lime", "lime_window_get_context", 1);
 	private static var lime_window_get_context_type = CFFI.load("lime", "lime_window_get_context_type", 1);
 	private static var lime_window_get_display = CFFI.load("lime", "lime_window_get_display", 1);
@@ -1198,6 +1223,11 @@ class NativeCFFI
 
 	// @:cffi private static function lime_neko_execute (module:String):Void;
 
+	@:hlNative("lime", "hl_notification_show") private static function lime_notification_show(title:String, body:String, icon:String):Bool
+	{
+		return false;
+	}
+
 	@:hlNative("lime", "hl_orientation_event_manager_register") private static function lime_orientation_event_manager_register(callback:Void->Void,
 		eventObject:OrientationEventInfo):Void {}
 
@@ -1225,6 +1255,21 @@ class NativeCFFI
 	@:hlNative("lime", "hl_system_set_allow_screen_timeout") private static function lime_system_set_allow_screen_timeout(value:Bool):Bool
 	{
 		return false;
+	}
+
+	@:hlNative("lime", "hl_system_get_battery_level") private static function lime_system_get_battery_level():Int
+	{
+		return -1;
+	}
+
+	@:hlNative("lime", "hl_system_get_power_state") private static function lime_system_get_power_state():Int
+	{
+		return 0; // UNKNOWN
+	}
+
+	@:hlNative("lime", "hl_system_get_theme") private static function lime_system_get_theme():Int
+	{
+		return 0; // UNKNOWN
 	}
 
 	@:hlNative("lime", "hl_system_get_display_orientation") private static function lime_system_get_display_orientation(value:Int):Int
@@ -1330,6 +1375,8 @@ class NativeCFFI
 	}
 
 	@:hlNative("lime", "hl_window_focus") private static function lime_window_focus(handle:CFFIPointer):Void {}
+
+	@:hlNative("lime", "hl_window_request_attention") private static function lime_window_request_attention(handle:CFFIPointer, briefly:Bool):Void {}
 
 	@:hlNative("lime", "hl_window_get_context") private static function lime_window_get_context(handle:CFFIPointer):Float
 	{

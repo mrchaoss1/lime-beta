@@ -2575,6 +2575,74 @@ namespace lime {
 	}
 
 
+	bool lime_notification_show (HxString title, HxString body, HxString icon) {
+
+		#ifdef HX_LINUX
+		// Use notify-send command for simplicity and compatibility
+		std::string cmd = "notify-send";
+
+		// Escape single quotes in strings
+		std::string titleStr = title.c_str();
+		std::string bodyStr = body.c_str();
+		std::string iconStr = icon.c_str();
+
+		// Build command
+		cmd += " '" + titleStr + "'";
+		if (!bodyStr.empty()) {
+			cmd += " '" + bodyStr + "'";
+		}
+		if (!iconStr.empty()) {
+			cmd += " --icon='" + iconStr + "'";
+		}
+		cmd += " 2>/dev/null";
+
+		// Execute command
+		int result = system(cmd.c_str());
+		return (result == 0);
+		#else
+		return false;
+		#endif
+
+	}
+
+
+	HL_PRIM bool HL_NAME(hl_notification_show) (hl_vstring* title, hl_vstring* body, hl_vstring* icon) {
+
+		#ifdef HX_LINUX
+		// Convert HashLink strings to C strings
+		const char* titleStr = (title && title->bytes) ? (const char*)hl_to_utf8((const uchar*)title->bytes) : "";
+		const char* bodyStr = (body && body->bytes) ? (const char*)hl_to_utf8((const uchar*)body->bytes) : "";
+		const char* iconStr = (icon && icon->bytes) ? (const char*)hl_to_utf8((const uchar*)icon->bytes) : "";
+
+		// Build command
+		std::string cmd = "notify-send '";
+		cmd += titleStr;
+		cmd += "'";
+
+		if (strlen(bodyStr) > 0) {
+			cmd += " '";
+			cmd += bodyStr;
+			cmd += "'";
+		}
+
+		if (strlen(iconStr) > 0) {
+			cmd += " --icon='";
+			cmd += iconStr;
+			cmd += "'";
+		}
+
+		cmd += " 2>/dev/null";
+
+		// Execute command
+		int result = system(cmd.c_str());
+		return (result == 0);
+		#else
+		return false;
+		#endif
+
+	}
+
+
 	void lime_orientation_event_manager_register (value callback, value eventObject) {
 
 		OrientationEvent::callback = new ValuePointer (callback);
@@ -2705,6 +2773,160 @@ namespace lime {
 	HL_PRIM bool HL_NAME(hl_system_get_allow_screen_timeout) () {
 
 		return System::GetAllowScreenTimeout ();
+
+	}
+
+
+	int lime_system_get_battery_level () {
+
+		#ifdef HX_LINUX
+		int seconds, percent;
+		SDL_PowerState state = SDL_GetPowerInfo (&seconds, &percent);
+		return (percent >= 0 && percent <= 100) ? percent : -1;
+		#else
+		return -1;
+		#endif
+
+	}
+
+
+	HL_PRIM int HL_NAME(hl_system_get_battery_level) () {
+
+		#ifdef HX_LINUX
+		int seconds, percent;
+		SDL_PowerState state = SDL_GetPowerInfo (&seconds, &percent);
+		return (percent >= 0 && percent <= 100) ? percent : -1;
+		#else
+		return -1;
+		#endif
+
+	}
+
+
+	int lime_system_get_power_state () {
+
+		#ifdef HX_LINUX
+		int seconds, percent;
+		SDL_PowerState state = SDL_GetPowerInfo (&seconds, &percent);
+
+		switch (state) {
+			case SDL_POWERSTATE_ON_BATTERY:
+				return 1; // ON_BATTERY
+			case SDL_POWERSTATE_NO_BATTERY:
+				return 2; // NO_BATTERY
+			case SDL_POWERSTATE_CHARGING:
+				return 3; // CHARGING
+			case SDL_POWERSTATE_CHARGED:
+				return 4; // CHARGED
+			default:
+				return 0; // UNKNOWN
+		}
+		#else
+		return 0; // UNKNOWN
+		#endif
+
+	}
+
+
+	HL_PRIM int HL_NAME(hl_system_get_power_state) () {
+
+		#ifdef HX_LINUX
+		int seconds, percent;
+		SDL_PowerState state = SDL_GetPowerInfo (&seconds, &percent);
+
+		switch (state) {
+			case SDL_POWERSTATE_ON_BATTERY:
+				return 1; // ON_BATTERY
+			case SDL_POWERSTATE_NO_BATTERY:
+				return 2; // NO_BATTERY
+			case SDL_POWERSTATE_CHARGING:
+				return 3; // CHARGING
+			case SDL_POWERSTATE_CHARGED:
+				return 4; // CHARGED
+			default:
+				return 0; // UNKNOWN
+		}
+		#else
+		return 0; // UNKNOWN
+		#endif
+
+	}
+
+
+	int lime_system_get_theme () {
+
+		#ifdef HX_LINUX
+		// Check GTK theme preference via gsettings
+		// Return: 0 = UNKNOWN, 1 = DARK, 2 = LIGHT
+		FILE* pipe = popen("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null", "r");
+		if (pipe) {
+			char buffer[128];
+			if (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+				pclose(pipe);
+				// Check if the result contains 'dark' or 'prefer-dark'
+				if (strstr(buffer, "dark") != NULL) {
+					return 1; // DARK
+				} else if (strstr(buffer, "default") != NULL || strstr(buffer, "light") != NULL) {
+					return 2; // LIGHT
+				}
+			} else {
+				pclose(pipe);
+			}
+		}
+
+		// Fallback: Check GTK_THEME environment variable
+		const char* gtkTheme = getenv("GTK_THEME");
+		if (gtkTheme != NULL) {
+			if (strstr(gtkTheme, "dark") != NULL || strstr(gtkTheme, "Dark") != NULL) {
+				return 1; // DARK
+			} else {
+				return 2; // LIGHT
+			}
+		}
+
+		return 0; // UNKNOWN
+		#else
+		return 0; // UNKNOWN
+		#endif
+
+	}
+
+
+	HL_PRIM int HL_NAME(hl_system_get_theme) () {
+
+		#ifdef HX_LINUX
+		// Check GTK theme preference via gsettings
+		// Return: 0 = UNKNOWN, 1 = DARK, 2 = LIGHT
+		FILE* pipe = popen("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null", "r");
+		if (pipe) {
+			char buffer[128];
+			if (fgets(buffer, sizeof(buffer), pipe) != NULL) {
+				pclose(pipe);
+				// Check if the result contains 'dark' or 'prefer-dark'
+				if (strstr(buffer, "dark") != NULL) {
+					return 1; // DARK
+				} else if (strstr(buffer, "default") != NULL || strstr(buffer, "light") != NULL) {
+					return 2; // LIGHT
+				}
+			} else {
+				pclose(pipe);
+			}
+		}
+
+		// Fallback: Check GTK_THEME environment variable
+		const char* gtkTheme = getenv("GTK_THEME");
+		if (gtkTheme != NULL) {
+			if (strstr(gtkTheme, "dark") != NULL || strstr(gtkTheme, "Dark") != NULL) {
+				return 1; // DARK
+			} else {
+				return 2; // LIGHT
+			}
+		}
+
+		return 0; // UNKNOWN
+		#else
+		return 0; // UNKNOWN
+		#endif
 
 	}
 
@@ -3348,6 +3570,22 @@ namespace lime {
 
 		Window* targetWindow = (Window*)window->ptr;
 		targetWindow->Focus ();
+
+	}
+
+
+	void lime_window_request_attention (value window, bool briefly) {
+
+		Window* targetWindow = (Window*)val_data (window);
+		targetWindow->RequestAttention (briefly);
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_window_request_attention) (HL_CFFIPointer* window, bool briefly) {
+
+		Window* targetWindow = (Window*)window->ptr;
+		targetWindow->RequestAttention (briefly);
 
 	}
 
@@ -4123,12 +4361,16 @@ namespace lime {
 	DEFINE_PRIME2 (lime_lzma_decompress);
 	DEFINE_PRIME2v (lime_mouse_event_manager_register);
 	DEFINE_PRIME1v (lime_neko_execute);
+	DEFINE_PRIME3 (lime_notification_show);
 	DEFINE_PRIME2v (lime_orientation_event_manager_register);
 	DEFINE_PRIME3 (lime_png_decode_bytes);
 	DEFINE_PRIME3 (lime_png_decode_file);
 	DEFINE_PRIME2v (lime_render_event_manager_register);
 	DEFINE_PRIME2v (lime_sensor_event_manager_register);
 	DEFINE_PRIME0 (lime_system_get_allow_screen_timeout);
+	DEFINE_PRIME0 (lime_system_get_battery_level);
+	DEFINE_PRIME0 (lime_system_get_power_state);
+	DEFINE_PRIME0 (lime_system_get_theme);
 	DEFINE_PRIME0 (lime_system_get_device_model);
 	DEFINE_PRIME0 (lime_system_get_device_vendor);
 	DEFINE_PRIME3 (lime_system_get_directory);
@@ -4159,6 +4401,7 @@ namespace lime {
 	DEFINE_PRIME5 (lime_window_create);
 	DEFINE_PRIME2v (lime_window_event_manager_register);
 	DEFINE_PRIME1v (lime_window_focus);
+	DEFINE_PRIME2v (lime_window_request_attention);
 	DEFINE_PRIME1 (lime_window_get_context);
 	DEFINE_PRIME1 (lime_window_get_context_type);
 	DEFINE_PRIME1 (lime_window_get_display);
@@ -4321,12 +4564,16 @@ namespace lime {
 	DEFINE_HL_PRIM (_TBYTES, hl_lzma_decompress, _TBYTES _TBYTES);
 	DEFINE_HL_PRIM (_VOID, hl_mouse_event_manager_register, _FUN (_VOID, _NO_ARG) _TMOUSE_EVENT);
 	// DEFINE_PRIME1v (lime_neko_execute);
+	DEFINE_HL_PRIM (_BOOL, hl_notification_show, _STRING _STRING _STRING);
 	DEFINE_HL_PRIM (_VOID, hl_orientation_event_manager_register, _FUN (_VOID, _NO_ARG) _TORIENTATION_EVENT);
 	DEFINE_HL_PRIM (_TIMAGEBUFFER, hl_png_decode_bytes, _TBYTES _BOOL _TIMAGEBUFFER);
 	DEFINE_HL_PRIM (_TIMAGEBUFFER, hl_png_decode_file, _STRING _BOOL _TIMAGEBUFFER);
 	DEFINE_HL_PRIM (_VOID, hl_render_event_manager_register, _FUN (_VOID, _NO_ARG) _TRENDER_EVENT);
 	DEFINE_HL_PRIM (_VOID, hl_sensor_event_manager_register, _FUN (_VOID, _NO_ARG) _TSENSOR_EVENT);
 	DEFINE_HL_PRIM (_BOOL, hl_system_get_allow_screen_timeout, _NO_ARG);
+	DEFINE_HL_PRIM (_I32, hl_system_get_battery_level, _NO_ARG);
+	DEFINE_HL_PRIM (_I32, hl_system_get_power_state, _NO_ARG);
+	DEFINE_HL_PRIM (_I32, hl_system_get_theme, _NO_ARG);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_device_model, _NO_ARG);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_device_vendor, _NO_ARG);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_directory, _I32 _STRING _STRING);
@@ -4357,6 +4604,7 @@ namespace lime {
 	DEFINE_HL_PRIM (_TCFFIPOINTER, hl_window_create, _TCFFIPOINTER _I32 _I32 _I32 _STRING);
 	DEFINE_HL_PRIM (_VOID, hl_window_event_manager_register, _FUN (_VOID, _NO_ARG) _TWINDOW_EVENT);
 	DEFINE_HL_PRIM (_VOID, hl_window_focus, _TCFFIPOINTER);
+	DEFINE_HL_PRIM (_VOID, hl_window_request_attention, _TCFFIPOINTER _BOOL);
 	DEFINE_HL_PRIM (_F64, hl_window_get_context, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_BYTES, hl_window_get_context_type, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_I32, hl_window_get_display, _TCFFIPOINTER);

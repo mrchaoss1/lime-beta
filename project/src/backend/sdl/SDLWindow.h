@@ -42,6 +42,7 @@ namespace lime {
 			virtual void Move (int x, int y);
 			virtual void ReadPixels (ImageBuffer *buffer, Rectangle *rect);
 			virtual void Resize (int width, int height);
+			virtual void RequestAttention (bool briefly);
 			virtual void SetMinimumSize (int width, int height);
 			virtual void SetMaximumSize (int width, int height);
 			virtual bool SetAlwaysOnTop (bool alwaysOnTop);
