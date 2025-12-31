@@ -3669,6 +3669,22 @@ namespace lime {
 	}
 
 
+	bool lime_window_set_always_on_top (value window, bool alwaysOnTop) {
+
+		Window* targetWindow = (Window*)val_data (window);
+		return targetWindow->SetAlwaysOnTop (alwaysOnTop);
+
+	}
+
+
+	HL_PRIM bool HL_NAME(hl_window_set_always_on_top) (HL_CFFIPointer* window, bool alwaysOnTop) {
+
+		Window* targetWindow = (Window*)window->ptr;
+		return targetWindow->SetAlwaysOnTop (alwaysOnTop);
+
+	}
+
+
 	bool lime_window_set_borderless (value window, bool borderless) {
 
 		Window* targetWindow = (Window*)val_data (window);
@@ -4160,6 +4176,7 @@ namespace lime {
 	DEFINE_PRIME3v (lime_window_resize);
 	DEFINE_PRIME3v (lime_window_set_minimum_size);
 	DEFINE_PRIME3v (lime_window_set_maximum_size);
+	DEFINE_PRIME2 (lime_window_set_always_on_top);
 	DEFINE_PRIME2 (lime_window_set_borderless);
 	DEFINE_PRIME2v (lime_window_set_cursor);
 	DEFINE_PRIME2 (lime_window_set_display_mode);

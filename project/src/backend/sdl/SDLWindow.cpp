@@ -765,6 +765,17 @@ namespace lime {
 	}
 
 
+	bool SDLWindow::SetAlwaysOnTop (bool alwaysOnTop) {
+
+		#if SDL_VERSION_ATLEAST(2, 0, 16)
+		SDL_SetWindowAlwaysOnTop (sdlWindow, alwaysOnTop ? SDL_TRUE : SDL_FALSE);
+		#endif
+
+		return alwaysOnTop;
+
+	}
+
+
 	bool SDLWindow::SetBorderless (bool borderless) {
 
 		if (borderless) {
