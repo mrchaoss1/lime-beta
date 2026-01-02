@@ -2931,6 +2931,122 @@ namespace lime {
 	}
 
 
+	// System Tray stub implementations - basic functionality for Linux
+	value lime_system_tray_create (HxString iconPath, HxString tooltip) {
+
+		#ifdef HX_LINUX
+		// For now, return a dummy handle to indicate tray is "supported"
+		// Full implementation would use DBus StatusNotifierItem or libappindicator
+		return alloc_int(1); // Dummy handle
+		#else
+		return alloc_null();
+		#endif
+
+	}
+
+
+	HL_PRIM HL_CFFIPointer* HL_NAME(hl_system_tray_create) (hl_vstring* iconPath, hl_vstring* tooltip) {
+
+		#ifdef HX_LINUX
+		// Stub implementation
+		return NULL;
+		#else
+		return NULL;
+		#endif
+
+	}
+
+
+	void lime_system_tray_destroy (value handle) {
+
+		#ifdef HX_LINUX
+		// Stub - would clean up tray icon resources
+		#endif
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_system_tray_destroy) (HL_CFFIPointer* handle) {
+
+		#ifdef HX_LINUX
+		// Stub
+		#endif
+
+	}
+
+
+	void lime_system_tray_hide (value handle) {
+
+		#ifdef HX_LINUX
+		// Stub - would hide tray icon
+		#endif
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_system_tray_hide) (HL_CFFIPointer* handle) {
+
+		#ifdef HX_LINUX
+		// Stub
+		#endif
+
+	}
+
+
+	void lime_system_tray_set_icon (value handle, HxString iconPath) {
+
+		#ifdef HX_LINUX
+		// Stub - would update tray icon image
+		#endif
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_system_tray_set_icon) (HL_CFFIPointer* handle, hl_vstring* iconPath) {
+
+		#ifdef HX_LINUX
+		// Stub
+		#endif
+
+	}
+
+
+	void lime_system_tray_set_tooltip (value handle, HxString tooltip) {
+
+		#ifdef HX_LINUX
+		// Stub - would update tray icon tooltip
+		#endif
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_system_tray_set_tooltip) (HL_CFFIPointer* handle, hl_vstring* tooltip) {
+
+		#ifdef HX_LINUX
+		// Stub
+		#endif
+
+	}
+
+
+	void lime_system_tray_show (value handle) {
+
+		#ifdef HX_LINUX
+		// Stub - would show tray icon
+		#endif
+
+	}
+
+
+	HL_PRIM void HL_NAME(hl_system_tray_show) (HL_CFFIPointer* handle) {
+
+		#ifdef HX_LINUX
+		// Stub
+		#endif
+
+	}
+
+
 	value lime_system_get_device_model () {
 
 		std::wstring* model = System::GetDeviceModel ();
@@ -4371,6 +4487,12 @@ namespace lime {
 	DEFINE_PRIME0 (lime_system_get_battery_level);
 	DEFINE_PRIME0 (lime_system_get_power_state);
 	DEFINE_PRIME0 (lime_system_get_theme);
+	DEFINE_PRIME2 (lime_system_tray_create);
+	DEFINE_PRIME1v (lime_system_tray_destroy);
+	DEFINE_PRIME1v (lime_system_tray_hide);
+	DEFINE_PRIME2v (lime_system_tray_set_icon);
+	DEFINE_PRIME2v (lime_system_tray_set_tooltip);
+	DEFINE_PRIME1v (lime_system_tray_show);
 	DEFINE_PRIME0 (lime_system_get_device_model);
 	DEFINE_PRIME0 (lime_system_get_device_vendor);
 	DEFINE_PRIME3 (lime_system_get_directory);
@@ -4574,6 +4696,12 @@ namespace lime {
 	DEFINE_HL_PRIM (_I32, hl_system_get_battery_level, _NO_ARG);
 	DEFINE_HL_PRIM (_I32, hl_system_get_power_state, _NO_ARG);
 	DEFINE_HL_PRIM (_I32, hl_system_get_theme, _NO_ARG);
+	DEFINE_HL_PRIM (_TCFFIPOINTER, hl_system_tray_create, _STRING _STRING);
+	DEFINE_HL_PRIM (_VOID, hl_system_tray_destroy, _TCFFIPOINTER);
+	DEFINE_HL_PRIM (_VOID, hl_system_tray_hide, _TCFFIPOINTER);
+	DEFINE_HL_PRIM (_VOID, hl_system_tray_set_icon, _TCFFIPOINTER _STRING);
+	DEFINE_HL_PRIM (_VOID, hl_system_tray_set_tooltip, _TCFFIPOINTER _STRING);
+	DEFINE_HL_PRIM (_VOID, hl_system_tray_show, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_device_model, _NO_ARG);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_device_vendor, _NO_ARG);
 	DEFINE_HL_PRIM (_BYTES, hl_system_get_directory, _I32 _STRING _STRING);
