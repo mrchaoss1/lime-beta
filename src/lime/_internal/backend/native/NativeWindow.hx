@@ -242,6 +242,16 @@ class NativeWindow
 		}
 	}
 
+	public function requestAttention(briefly:Bool):Void
+	{
+		if (handle != null)
+		{
+			#if (!macro && lime_cffi)
+			NativeCFFI.lime_window_request_attention(handle, briefly);
+			#end
+		}
+	}
+
 	public function getCursor():MouseCursor
 	{
 		return cursor;
@@ -481,6 +491,18 @@ class NativeWindow
 			NativeCFFI.lime_window_set_maximum_size(handle, width, height);
 			#end
 		}
+	}
+
+	public function setAlwaysOnTop(value:Bool):Bool
+	{
+		if (handle != null)
+		{
+			#if (!macro && lime_cffi)
+			NativeCFFI.lime_window_set_always_on_top(handle, value);
+			#end
+		}
+
+		return value;
 	}
 
 	public function setBorderless(value:Bool):Bool

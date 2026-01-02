@@ -28,6 +28,7 @@ typedef Stage = Dynamic;
 #end
 class Window
 {
+	public var alwaysOnTop(get, set):Bool;
 	public var application(default, null):Application;
 	public var borderless(get, set):Bool;
 	public var context(default, null):RenderContext;
@@ -106,6 +107,7 @@ class Window
 	@:allow(lime._internal.backend.html5.HTML5Window)
 	private var clickCount:Int = 0;
 
+	@:noCompletion private var __alwaysOnTop:Bool;
 	@:noCompletion private var __attributes:WindowAttributes;
 	@:noCompletion private var __backend:WindowBackend;
 	@:noCompletion private var __borderless:Bool;
@@ -133,6 +135,7 @@ class Window
 		var p = untyped Window.prototype;
 		untyped Object.defineProperties(p,
 			{
+				"alwaysOnTop": {get: p.get_alwaysOnTop, set: p.set_alwaysOnTop},
 				"borderless": {get: p.get_borderless, set: p.set_borderless},
 				"cursor": {get: p.get_cursor, set: p.set_cursor},
 				"display": {get: p.get_display},
@@ -404,6 +407,15 @@ class Window
 		__backend.focus();
 	}
 
+	/**
+		Requests user attention by flashing the window in the taskbar.
+		@param briefly If true, flashes briefly. If false, flashes until focused.
+	**/
+	public function requestAttention(briefly:Bool = true):Void
+	{
+		__backend.requestAttention(briefly);
+	}
+
 	public function move(x:Int, y:Int):Void
 	{
 		__backend.move(x, y);
@@ -508,6 +520,16 @@ class Window
 	@:noCompletion private function set_displayMode(value:DisplayMode):DisplayMode
 	{
 		return __backend.setDisplayMode(value);
+	}
+
+	@:noCompletion private inline function get_alwaysOnTop():Bool
+	{
+		return __alwaysOnTop;
+	}
+
+	@:noCompletion private function set_alwaysOnTop(value:Bool):Bool
+	{
+		return __alwaysOnTop = __backend.setAlwaysOnTop(value);
 	}
 
 	@:noCompletion private inline function get_borderless():Bool

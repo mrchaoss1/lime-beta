@@ -822,7 +822,13 @@ namespace lime {
 
 		}
 		#else
-		result = SDL_RWFromFile (filename, mode);
+		// Use standard fopen() for better UTF-8 support (Cyrillic, etc.) on Linux
+		FILE* file = ::fopen (filename, mode);
+		if (file) {
+			result = SDL_RWFromFP (file, SDL_TRUE);
+		} else {
+			result = NULL;
+		}
 		#endif
 
 		System::GCExitBlocking ();

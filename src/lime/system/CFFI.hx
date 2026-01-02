@@ -5,6 +5,10 @@ import haxe.io.Path;
 import lime._internal.macros.CFFIMacro;
 #if (sys && !macro)
 import sys.io.Process;
+import sys.FileSystem;
+#end
+#if (sys && lime_ndll_protection)
+import lime.utils.NDLLProtection;
 #end
 
 #if !lime_debug
@@ -335,32 +339,70 @@ class CFFI
 	private static function __tryLoad(name:String, library:String, func:String, args:Int):Dynamic
 	{
 		#if sys
+		// Handle encrypted NDLL (only for lime library with protection enabled)
+		#if lime_ndll_protection
+		var actualName = name;
+		var tempPath:String = null;
+
+		// Only decrypt lime.ndll, leave other NDLLs (linc_luajit, hxvlc, etc.) untouched
+		if (library == "lime" && FileSystem.exists(name + ".encrypted"))
+		{
+			__loaderTrace("Found encrypted lime.ndll, decrypting...");
+			try
+			{
+				tempPath = NDLLProtection.getTempPath("lime");
+				actualName = NDLLProtection.decryptNDLL(name + ".encrypted", tempPath);
+				__loaderTrace("Decrypted to: " + actualName);
+			}
+			catch (e:Dynamic)
+			{
+				__loaderTrace("Decryption failed: " + e);
+				return null;
+			}
+		}
+		#else
+		var actualName = name;
+		#end
+
 		try
 		{
 			#if cpp
-			var result = cpp.Lib.load(name, func, args);
+			var result = cpp.Lib.load(actualName, func, args);
 			#elseif (neko)
-			var result = neko.Lib.load(name, func, args);
+			var result = neko.Lib.load(actualName, func, args);
 			#elseif nodejs
-			var result = untyped __nodeNDLLModule.load_lib(name, func, args);
+			var result = untyped __nodeNDLLModule.load_lib(actualName, func, args);
 			#elseif java
-			var result = __loadJava(name, func, args);
+			var result = __loadJava(actualName, func, args);
 			#elseif cs
-			var result = CSFunctionLoader.load(name, func, args);
+			var result = CSFunctionLoader.load(actualName, func, args);
 			#else
 			var result = null;
 			#end
 
 			if (result != null)
 			{
-				__loaderTrace("Got result " + name);
-				__moduleNames.set(library, name);
+				__loaderTrace("Got result " + actualName);
+				__moduleNames.set(library, actualName);
+
+				// Note: We intentionally DON'T clean up temp file yet
+				// as the library is now loaded and may be needed
+				// The OS will clean it up on reboot
+
 				return result;
 			}
 		}
 		catch (e:Dynamic)
 		{
-			__loaderTrace("Failed to load : " + name);
+			__loaderTrace("Failed to load : " + actualName);
+
+			// Cleanup temp file on failure
+			#if lime_ndll_protection
+			if (tempPath != null)
+			{
+				NDLLProtection.cleanupTemp(tempPath);
+			}
+			#end
 		}
 		#end
 

@@ -751,6 +751,15 @@ namespace lime {
 	}
 
 
+	void SDLWindow::RequestAttention (bool briefly) {
+
+		#if SDL_VERSION_ATLEAST(2, 0, 16)
+		SDL_FlashWindow (sdlWindow, briefly ? SDL_FLASH_BRIEFLY : SDL_FLASH_UNTIL_FOCUSED);
+		#endif
+
+	}
+
+
 	void SDLWindow::SetMinimumSize (int width, int height) {
 
 		SDL_SetWindowMinimumSize (sdlWindow, width, height);
@@ -761,6 +770,17 @@ namespace lime {
 	void SDLWindow::SetMaximumSize (int width, int height) {
 
 		SDL_SetWindowMaximumSize (sdlWindow, width, height);
+
+	}
+
+
+	bool SDLWindow::SetAlwaysOnTop (bool alwaysOnTop) {
+
+		#if SDL_VERSION_ATLEAST(2, 0, 16)
+		SDL_SetWindowAlwaysOnTop (sdlWindow, alwaysOnTop ? SDL_TRUE : SDL_FALSE);
+		#endif
+
+		return alwaysOnTop;
 
 	}
 
