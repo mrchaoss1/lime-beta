@@ -57,12 +57,6 @@ class Event<T>
 	public function add(listener:T, once:Bool = false, priority:Int = 0):Void
 	{
 		#if !macro
-		// Check for duplicate listener - simple array check
-		for (existing in __listeners)
-		{
-			if (existing == listener) return;
-		}
-
 		for (i in 0...__priorities.length)
 		{
 			if (priority > __priorities[i])
@@ -132,15 +126,13 @@ class Event<T>
 	public function has(listener:T):Bool
 	{
 		#if !macro
-		// Simple array lookup
-		for (existing in __listeners)
+		for (l in __listeners)
 		{
-			if (existing == listener) return true;
+			if (Reflect.compareMethods(l, listener)) return true;
 		}
-		return false;
-		#else
-		return false;
 		#end
+
+		return false;
 	}
 
 	/**
@@ -154,8 +146,7 @@ class Event<T>
 
 		while (--i >= 0)
 		{
-			// Use reference equality for direct comparison
-			if (__listeners[i] == listener)
+			if (Reflect.compareMethods(__listeners[i], listener))
 			{
 				__listeners.splice(i, 1);
 				__priorities.splice(i, 1);
