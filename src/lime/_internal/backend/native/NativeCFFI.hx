@@ -259,6 +259,18 @@ class NativeCFFI
 
 	@:cffi private static function lime_system_get_theme():Int;
 
+	@:cffi private static function lime_system_tray_create(iconPath:String, tooltip:String):Dynamic;
+
+	@:cffi private static function lime_system_tray_destroy(handle:Dynamic):Void;
+
+	@:cffi private static function lime_system_tray_hide(handle:Dynamic):Void;
+
+	@:cffi private static function lime_system_tray_set_icon(handle:Dynamic, iconPath:String):Void;
+
+	@:cffi private static function lime_system_tray_set_tooltip(handle:Dynamic, tooltip:String):Void;
+
+	@:cffi private static function lime_system_tray_show(handle:Dynamic):Void;
+
 	@:cffi private static function lime_system_get_display_orientation(value:Bool):Bool;
 
 	@:cffi private static function lime_system_get_device_model():Dynamic;
@@ -566,6 +578,18 @@ class NativeCFFI
 		"lime_system_get_power_state", "i", false));
 	private static var lime_system_get_theme = new cpp.Callable<Void->Int>(cpp.Prime._loadPrime("lime",
 		"lime_system_get_theme", "i", false));
+	private static var lime_system_tray_create = new cpp.Callable<String->String->cpp.Object>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_create", "sso", false));
+	private static var lime_system_tray_destroy = new cpp.Callable<cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_destroy", "ov", false));
+	private static var lime_system_tray_hide = new cpp.Callable<cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_hide", "ov", false));
+	private static var lime_system_tray_set_icon = new cpp.Callable<cpp.Object->String->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_set_icon", "osv", false));
+	private static var lime_system_tray_set_tooltip = new cpp.Callable<cpp.Object->String->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_set_tooltip", "osv", false));
+	private static var lime_system_tray_show = new cpp.Callable<cpp.Object->cpp.Void>(cpp.Prime._loadPrime("lime",
+		"lime_system_tray_show", "ov", false));
 		private static var lime_system_get_display_orientation = new cpp.Callable<Int->Int>(cpp.Prime._loadPrime("lime",
 		"lime_system_get_display_orientation", "ii", false));
 	private static var lime_system_get_device_model = new cpp.Callable<Void->cpp.Object>(cpp.Prime._loadPrime("lime", "lime_system_get_device_model", "o",
@@ -778,6 +802,12 @@ class NativeCFFI
 	private static var lime_system_get_battery_level = CFFI.load("lime", "lime_system_get_battery_level", 0);
 	private static var lime_system_get_power_state = CFFI.load("lime", "lime_system_get_power_state", 0);
 	private static var lime_system_get_theme = CFFI.load("lime", "lime_system_get_theme", 0);
+	private static var lime_system_tray_create = CFFI.load("lime", "lime_system_tray_create", 2);
+	private static var lime_system_tray_destroy = CFFI.load("lime", "lime_system_tray_destroy", 1);
+	private static var lime_system_tray_hide = CFFI.load("lime", "lime_system_tray_hide", 1);
+	private static var lime_system_tray_set_icon = CFFI.load("lime", "lime_system_tray_set_icon", 2);
+	private static var lime_system_tray_set_tooltip = CFFI.load("lime", "lime_system_tray_set_tooltip", 2);
+	private static var lime_system_tray_show = CFFI.load("lime", "lime_system_tray_show", 1);
 	private static var lime_system_get_display_orientation = CFFI.load("lime", "lime_system_get_display_orientation", 1);
 	private static var lime_system_get_device_model = CFFI.load("lime", "lime_system_get_device_model", 0);
 	private static var lime_system_get_device_vendor = CFFI.load("lime", "lime_system_get_device_vendor", 0);
@@ -1271,6 +1301,21 @@ class NativeCFFI
 	{
 		return 0; // UNKNOWN
 	}
+
+	@:hlNative("lime", "hl_system_tray_create") private static function lime_system_tray_create(iconPath:String, tooltip:String):CFFIPointer
+	{
+		return null;
+	}
+
+	@:hlNative("lime", "hl_system_tray_destroy") private static function lime_system_tray_destroy(handle:CFFIPointer):Void {}
+
+	@:hlNative("lime", "hl_system_tray_hide") private static function lime_system_tray_hide(handle:CFFIPointer):Void {}
+
+	@:hlNative("lime", "hl_system_tray_set_icon") private static function lime_system_tray_set_icon(handle:CFFIPointer, iconPath:String):Void {}
+
+	@:hlNative("lime", "hl_system_tray_set_tooltip") private static function lime_system_tray_set_tooltip(handle:CFFIPointer, tooltip:String):Void {}
+
+	@:hlNative("lime", "hl_system_tray_show") private static function lime_system_tray_show(handle:CFFIPointer):Void {}
 
 	@:hlNative("lime", "hl_system_get_display_orientation") private static function lime_system_get_display_orientation(value:Int):Int
 	{
