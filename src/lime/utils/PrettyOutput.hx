@@ -55,12 +55,12 @@ class PrettyOutput
 		// Check if terminal supports colors
 		enableColors = Sys.getEnv("TERM") != null && Sys.getEnv("TERM") != "dumb";
 		if (Sys.getEnv("NO_COLOR") != null) enableColors = false;
-		#end
 
 		startTime = Sys.time();
 		lastStepTime = startTime;
 		currentStep = 0;
 		totalSteps = steps != null ? steps : 0;
+		#end
 	}
 
 	/**
@@ -68,7 +68,7 @@ class PrettyOutput
 	 */
 	public static function section(title:String):Void
 	{
-		var line = "═".repeat(60);
+		var line = repeat("═", 60);
 		println("");
 		println(color(line, CYAN));
 		println(color("  " + title, CYAN, BOLD));
@@ -82,8 +82,10 @@ class PrettyOutput
 	{
 		currentStep++;
 		var progress = totalSteps > 0 ? '[$currentStep/$totalSteps] ' : '[$currentStep] ';
+		#if sys
 		var elapsed = formatTime(Sys.time() - lastStepTime);
 		lastStepTime = Sys.time();
+		#end
 
 		println(color(progress, DIM) + color(ICON_BUILD, BLUE) + " " + message);
 	}
@@ -138,7 +140,7 @@ class PrettyOutput
 		var filled = Math.floor(percent * width);
 		var empty = width - filled;
 
-		var bar = "[" + "█".repeat(filled) + "░".repeat(empty) + "]";
+		var bar = "[" + repeat("█", filled) + repeat("░", empty) + "]";
 		var percentStr = Math.floor(percent * 100) + "%";
 		var info = label != null ? ' $label' : '';
 
@@ -155,8 +157,6 @@ class PrettyOutput
 	 */
 	public static function summary(success:Bool, ?details:Map<String, String>):Void
 	{
-		var totalTime = Sys.time() - startTime;
-
 		println("");
 		section(success ? "Build Complete" : "Build Failed");
 
@@ -169,8 +169,11 @@ class PrettyOutput
 			println(color(ICON_ERROR + " FAILED", RED, BOLD));
 		}
 
+		#if sys
+		var totalTime = Sys.time() - startTime;
 		println("");
 		println(color(ICON_TIME + " Total time: ", DIM) + color(formatTime(totalTime), WHITE, BOLD));
+		#end
 
 		if (details != null)
 		{
@@ -210,19 +213,27 @@ class PrettyOutput
 			if (line.length > maxWidth) maxWidth = line.length;
 		}
 
-		var topLine = title != null ? '┌─ $title ' + "─".repeat(maxWidth - title.length + 1) + "┐"
-									 : "┌" + "─".repeat(maxWidth + 2) + "┐";
+		var topLine = title != null ? '┌─ $title ' + repeat("─", maxWidth - title.length + 1) + "┐"
+									 : "┌" + repeat("─", maxWidth + 2) + "┐";
 
 		println(color(topLine, CYAN));
 		for (line in lines)
 		{
-			var padding = " ".repeat(maxWidth - line.length);
+			var padding = repeat(" ", maxWidth - line.length);
 			println(color("│ ", CYAN) + line + padding + color(" │", CYAN));
 		}
-		println(color("└" + "─".repeat(maxWidth + 2) + "┘", CYAN));
+		println(color("└" + repeat("─", maxWidth + 2) + "┘", CYAN));
 	}
 
 	// Helper functions
+
+	private static function repeat(str:String, count:Int):String
+	{
+		if (count <= 0) return "";
+		var result = "";
+		for (i in 0...count) result += str;
+		return result;
+	}
 
 	private static function color(text:String, ?color:String, ?modifier:String):String
 	{

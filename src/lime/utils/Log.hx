@@ -112,6 +112,9 @@ class Log
 	{
 		if (level >= LogLevel.VERBOSE)
 		{
+			#if js
+			untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").log("[" + info.className + "] " + message);
+			#else
 			if (usePrettyOutput)
 			{
 				PrettyOutput.verbose(Std.string(message));
@@ -120,6 +123,7 @@ class Log
 			{
 				println("[" + info.className + "] " + message);
 			}
+			#end
 		}
 	}
 
