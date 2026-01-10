@@ -3,7 +3,7 @@ package lime.system;
 #if (!lime_doc_gen || lime_cffi)
 import haxe.io.Path;
 import lime._internal.macros.CFFIMacro;
-#if (sys && !macro)
+#if sys
 import sys.io.Process;
 import sys.FileSystem;
 import sys.io.File;
