@@ -66,6 +66,8 @@ namespace lime {
 			virtual bool SetVisible (bool visible) = 0;
 			virtual bool SetVSync (bool vsync) = 0;
 			virtual void WarpMouse (int x, int y) = 0;
+			virtual bool SetAlwaysOnTop (bool alwaysOnTop) = 0;
+			virtual void RequestAttention (bool briefly) = 0;
 
 			Application* currentApplication;
 			int flags;
