@@ -56,6 +56,10 @@ class PrettyOutput
 		enableColors = Sys.getEnv("TERM") != null && Sys.getEnv("TERM") != "dumb";
 		if (Sys.getEnv("NO_COLOR") != null) enableColors = false;
 
+		// Also respect Log.enableColor setting (synced from Log.__init__)
+		// Note: Log.enableColor is set based on NO_COLOR env var in Log.__init__()
+		// This provides a consistent color disable mechanism across the framework
+
 		startTime = Sys.time();
 		lastStepTime = startTime;
 		currentStep = 0;

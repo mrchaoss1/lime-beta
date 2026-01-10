@@ -3,7 +3,7 @@ package lime.system;
 #if (!lime_doc_gen || lime_cffi)
 import haxe.io.Path;
 import lime._internal.macros.CFFIMacro;
-#if sys
+#if (sys && !macro)
 import sys.io.Process;
 import sys.FileSystem;
 import sys.io.File;
@@ -339,32 +339,44 @@ class CFFI
 
 	private static function __tryLoad(name:String, library:String, func:String, args:Int):Dynamic
 	{
-		#if sys
+		#if (sys && !macro)
 		var actualName = name;
 
 		// Check for NDLL in custom user folder first (hidden location)
+		// ONLY apply to lime.ndll - leave linc_luajit, hxvlc, etc. in bin folder for DLL dependency resolution
 		#if lime_ndll_hidden
-		var userLibPath = __getUserLibPath();
-		var fileName = haxe.io.Path.withoutDirectory(name);
-		var userNDLL = haxe.io.Path.join([userLibPath, fileName]);
+		if (library == "lime")
+		{
+			var userLibPath = __getUserLibPath();
+			var fileName = haxe.io.Path.withoutDirectory(name);
+			var userNDLL = haxe.io.Path.join([userLibPath, fileName]);
 
-		// Check if NDLL exists in user folder
-		if (FileSystem.exists(userNDLL + ".ndll"))
-		{
-			actualName = userNDLL;
-			__loaderTrace("Loading NDLL from user folder: " + actualName);
-		}
-		else if (FileSystem.exists(userNDLL + ".encrypted"))
-		{
-			actualName = userNDLL;
-			__loaderTrace("Found encrypted NDLL in user folder: " + actualName);
-		}
-		else
-		{
-			// First run: copy NDLL to user folder
-			__loaderTrace("NDLL not in user folder, copying...");
-			__copyNDLLToUserFolder(name, userLibPath);
-			actualName = userNDLL;
+			// Check if NDLL exists in user folder
+			if (FileSystem.exists(userNDLL + ".ndll"))
+			{
+				actualName = userNDLL;
+				__loaderTrace("Loading lime.ndll from user folder: " + actualName);
+			}
+			else if (FileSystem.exists(userNDLL + ".encrypted"))
+			{
+				actualName = userNDLL;
+				__loaderTrace("Found encrypted lime.ndll in user folder: " + actualName);
+			}
+			else
+			{
+				// First run: copy lime.ndll to user folder
+				__loaderTrace("lime.ndll not in user folder, copying...");
+				if (!__copyNDLLToUserFolder(name, userLibPath))
+				{
+					// Copy failed - fallback to original path
+					__loaderTrace("Failed to copy lime.ndll, using original path");
+					actualName = name;
+				}
+				else
+				{
+					actualName = userNDLL;
+				}
+			}
 		}
 		#end
 
@@ -436,6 +448,23 @@ class CFFI
 	}
 
 	#if (sys && lime_ndll_hidden)
+	/**
+	 * Recursively create directories
+	 * @param path Directory path to create
+	 */
+	private static function __createDirectoryRecursive(path:String):Void
+	{
+		if (FileSystem.exists(path)) return;
+
+		var parent = haxe.io.Path.directory(path);
+		if (parent != null && parent != "" && parent != path)
+		{
+			__createDirectoryRecursive(parent);
+		}
+
+		FileSystem.createDirectory(path);
+	}
+
 	private static function __getUserLibPath():String
 	{
 		// Get user-specific hidden folder for NDLLs
@@ -453,12 +482,12 @@ class CFFI
 
 		var libPath = haxe.io.Path.join([basePath, "lime-lib"]);
 
-		// Create directory if it doesn't exist
+		// Create directory recursively if it doesn't exist
 		try
 		{
 			if (!FileSystem.exists(libPath))
 			{
-				FileSystem.createDirectory(libPath);
+				__createDirectoryRecursive(libPath);
 				__loaderTrace("Created NDLL folder: " + libPath);
 			}
 		}
@@ -470,33 +499,92 @@ class CFFI
 		return libPath;
 	}
 
-	private static function __copyNDLLToUserFolder(sourcePath:String, destFolder:String):Void
+	/**
+	 * Copy NDLL to user folder with atomic operations and version checking
+	 * @param sourcePath Path to source NDLL (without extension)
+	 * @param destFolder Destination folder path
+	 * @return True if copy succeeded, false otherwise
+	 */
+	private static function __copyNDLLToUserFolder(sourcePath:String, destFolder:String):Bool
 	{
 		try
 		{
 			var fileName = haxe.io.Path.withoutDirectory(sourcePath);
 			var destPath = haxe.io.Path.join([destFolder, fileName]);
 
-			// Try .encrypted first
+			var sourceFile:String = null;
+			var destFile:String = null;
+
+			// Determine which file to copy (.encrypted or .ndll)
 			if (FileSystem.exists(sourcePath + ".encrypted"))
 			{
-				sys.io.File.copy(sourcePath + ".encrypted", destPath + ".encrypted");
-				__loaderTrace("Copied encrypted NDLL: " + destPath + ".encrypted");
+				sourceFile = sourcePath + ".encrypted";
+				destFile = destPath + ".encrypted";
 			}
-			// Then try .ndll
 			else if (FileSystem.exists(sourcePath + ".ndll"))
 			{
-				sys.io.File.copy(sourcePath + ".ndll", destPath + ".ndll");
-				__loaderTrace("Copied NDLL: " + destPath + ".ndll");
+				sourceFile = sourcePath + ".ndll";
+				destFile = destPath + ".ndll";
 			}
 			else
 			{
 				__loaderTrace("Source NDLL not found: " + sourcePath);
+				return false;
+			}
+
+			// Check if destination already exists and is newer (version check)
+			if (FileSystem.exists(destFile))
+			{
+				var sourceStat = FileSystem.stat(sourceFile);
+				var destStat = FileSystem.stat(destFile);
+
+				// If destination is newer or same size, assume it's up to date
+				if (destStat.mtime.getTime() >= sourceStat.mtime.getTime())
+				{
+					__loaderTrace("NDLL already up to date: " + destFile);
+					return true;
+				}
+
+				__loaderTrace("Updating existing NDLL (source is newer)");
+			}
+
+			// Use atomic copy: write to temp file, then rename
+			// This prevents race conditions and corruption from concurrent access
+			var tempFile = destFile + ".tmp." + Std.random(99999);
+
+			try
+			{
+				sys.io.File.copy(sourceFile, tempFile);
+
+				// If destination exists, delete it first (on Windows can't rename over existing file)
+				if (FileSystem.exists(destFile))
+				{
+					FileSystem.deleteFile(destFile);
+				}
+
+				FileSystem.rename(tempFile, destFile);
+				__loaderTrace("Successfully copied NDLL: " + destFile);
+				return true;
+			}
+			catch (e:Dynamic)
+			{
+				// Cleanup temp file on failure
+				try
+				{
+					if (FileSystem.exists(tempFile))
+					{
+						FileSystem.deleteFile(tempFile);
+					}
+				}
+				catch (_:Dynamic) {}
+
+				throw e; // Re-throw to outer catch
 			}
 		}
 		catch (e:Dynamic)
 		{
 			__loaderTrace("Failed to copy NDLL: " + e);
+			return false;
 		}
 	}
 	#end
