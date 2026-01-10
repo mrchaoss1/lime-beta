@@ -339,19 +339,46 @@ class CFFI
 	private static function __tryLoad(name:String, library:String, func:String, args:Int):Dynamic
 	{
 		#if sys
+		var actualName = name;
+
+		// Check for NDLL in custom user folder first (hidden location)
+		#if lime_ndll_hidden
+		var userLibPath = __getUserLibPath();
+		var fileName = haxe.io.Path.withoutDirectory(name);
+		var userNDLL = haxe.io.Path.join([userLibPath, fileName]);
+
+		// Check if NDLL exists in user folder
+		if (FileSystem.exists(userNDLL + ".ndll"))
+		{
+			actualName = userNDLL;
+			__loaderTrace("Loading NDLL from user folder: " + actualName);
+		}
+		else if (FileSystem.exists(userNDLL + ".encrypted"))
+		{
+			actualName = userNDLL;
+			__loaderTrace("Found encrypted NDLL in user folder: " + actualName);
+		}
+		else
+		{
+			// First run: copy NDLL to user folder
+			__loaderTrace("NDLL not in user folder, copying...");
+			__copyNDLLToUserFolder(name, userLibPath);
+			actualName = userNDLL;
+		}
+		#end
+
 		// Handle encrypted NDLL (only for lime library with protection enabled)
 		#if lime_ndll_protection
-		var actualName = name;
 		var tempPath:String = null;
 
 		// Only decrypt lime.ndll, leave other NDLLs (linc_luajit, hxvlc, etc.) untouched
-		if (library == "lime" && FileSystem.exists(name + ".encrypted"))
+		if (library == "lime" && FileSystem.exists(actualName + ".encrypted"))
 		{
 			__loaderTrace("Found encrypted lime.ndll, decrypting...");
 			try
 			{
 				tempPath = NDLLProtection.getTempPath("lime");
-				actualName = NDLLProtection.decryptNDLL(name + ".encrypted", tempPath);
+				actualName = NDLLProtection.decryptNDLL(actualName + ".encrypted", tempPath);
 				__loaderTrace("Decrypted to: " + actualName);
 			}
 			catch (e:Dynamic)
@@ -360,8 +387,6 @@ class CFFI
 				return null;
 			}
 		}
-		#else
-		var actualName = name;
 		#end
 
 		try
@@ -408,6 +433,72 @@ class CFFI
 
 		return null;
 	}
+
+	#if (sys && lime_ndll_hidden)
+	private static function __getUserLibPath():String
+	{
+		// Get user-specific hidden folder for NDLLs
+		var basePath:String;
+
+		#if windows
+		var appData = Sys.getEnv("LOCALAPPDATA");
+		if (appData == null) appData = Sys.getEnv("APPDATA");
+		basePath = appData != null ? appData : Sys.getEnv("USERPROFILE");
+		#elseif mac
+		basePath = Sys.getEnv("HOME") + "/Library/Application Support";
+		#else // linux
+		basePath = Sys.getEnv("HOME") + "/.local/share";
+		#end
+
+		var libPath = haxe.io.Path.join([basePath, "lime-lib"]);
+
+		// Create directory if it doesn't exist
+		try
+		{
+			if (!FileSystem.exists(libPath))
+			{
+				FileSystem.createDirectory(libPath);
+				__loaderTrace("Created NDLL folder: " + libPath);
+			}
+		}
+		catch (e:Dynamic)
+		{
+			__loaderTrace("Failed to create NDLL folder: " + e);
+		}
+
+		return libPath;
+	}
+
+	private static function __copyNDLLToUserFolder(sourcePath:String, destFolder:String):Void
+	{
+		try
+		{
+			var fileName = haxe.io.Path.withoutDirectory(sourcePath);
+			var destPath = haxe.io.Path.join([destFolder, fileName]);
+
+			// Try .encrypted first
+			if (FileSystem.exists(sourcePath + ".encrypted"))
+			{
+				sys.io.File.copy(sourcePath + ".encrypted", destPath + ".encrypted");
+				__loaderTrace("Copied encrypted NDLL: " + destPath + ".encrypted");
+			}
+			// Then try .ndll
+			else if (FileSystem.exists(sourcePath + ".ndll"))
+			{
+				sys.io.File.copy(sourcePath + ".ndll", destPath + ".ndll");
+				__loaderTrace("Copied NDLL: " + destPath + ".ndll");
+			}
+			else
+			{
+				__loaderTrace("Source NDLL not found: " + sourcePath);
+			}
+		}
+		catch (e:Dynamic)
+		{
+			__loaderTrace("Failed to copy NDLL: " + e);
+		}
+	}
+	#end
 }
 
 #if cs
