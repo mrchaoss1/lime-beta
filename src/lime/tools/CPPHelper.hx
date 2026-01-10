@@ -3,6 +3,7 @@ package lime.tools;
 import hxp.*;
 import lime.tools.HXProject;
 import lime.tools.Platform;
+import lime.utils.PrettyOutput;
 import sys.io.File;
 import sys.FileSystem;
 
@@ -116,7 +117,31 @@ class CPPHelper
 
 			Sys.putEnv("HXCPP_EXIT_ON_ERROR", "");
 
+			// Show pretty build header
+			if (Log.enableColor)
+			{
+				PrettyOutput.init();
+				PrettyOutput.section("C++ Compilation");
+				PrettyOutput.info('Building: ${path}');
+				PrettyOutput.info('Platform: ${System.hostPlatform}');
+				Log.println("");
+			}
+
+			var startTime = Sys.time();
 			var code = Haxelib.runCommand(path, args);
+
+			// Show pretty build summary
+			if (Log.enableColor)
+			{
+				var totalTime = Sys.time() - startTime;
+				Log.println("");
+
+				var details = new Map<String, String>();
+				details.set("Build time", PrettyOutput.formatTime(totalTime));
+				details.set("Exit code", Std.string(code));
+
+				PrettyOutput.summary(code == 0, details);
+			}
 
 			if (code != 0)
 			{

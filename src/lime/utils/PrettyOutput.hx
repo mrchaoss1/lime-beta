@@ -246,7 +246,7 @@ class PrettyOutput
 		return code != "" ? code + text + RESET : text;
 	}
 
-	private static function formatTime(seconds:Float):String
+	public static function formatTime(seconds:Float):String
 	{
 		if (seconds < 1) return Math.round(seconds * 1000) + "ms";
 		if (seconds < 60) return Math.round(seconds * 10) / 10 + "s";
