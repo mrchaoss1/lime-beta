@@ -12,6 +12,7 @@ class Log
 	public static var level:LogLevel;
 	public static var throwErrors:Bool = true;
 	public static var usePrettyOutput:Bool = true;
+	public static var enableColor:Bool = true;
 
 	public static function debug(message:Dynamic, ?info:PosInfos):Void
 	{
@@ -269,11 +270,19 @@ class Log
 		}
 		#end
 
-		// Check if pretty output should be disabled
+		// Check if colors and pretty output should be disabled
 		#if sys
-		if (Sys.getEnv("NO_COLOR") != null || Sys.getEnv("LIME_NO_PRETTY") != null)
+		var noColor = Sys.getEnv("NO_COLOR") != null;
+		var noPretty = Sys.getEnv("LIME_NO_PRETTY") != null;
+
+		if (noColor || noPretty)
 		{
 			usePrettyOutput = false;
+		}
+
+		if (noColor)
+		{
+			enableColor = false;
 		}
 		#end
 
