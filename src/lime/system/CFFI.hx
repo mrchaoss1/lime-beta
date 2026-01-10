@@ -6,6 +6,7 @@ import lime._internal.macros.CFFIMacro;
 #if (sys && !macro)
 import sys.io.Process;
 import sys.FileSystem;
+import sys.io.File;
 #end
 #if (sys && lime_ndll_protection)
 import lime.utils.NDLLProtection;
